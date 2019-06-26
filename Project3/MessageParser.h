@@ -3,9 +3,10 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <time.h>
 #include <unordered_map>
 #include "winsock2.h" 
+#include <time.h>
+#include <Windows.h>
 
 using namespace std;
 
@@ -13,6 +14,7 @@ using namespace std;
 
 const int M = 1048576;//1M
 const int K = 1024;   //1K
+const double NEW_NULL = 1000000000;//这个数代表NULL
 
 struct message_set;
 struct message_byte;
@@ -28,16 +30,10 @@ typedef struct data data;
 
 struct message_byte
 {
-	//1K
-	BYTE val[K];
+	//70K
+	BYTE val[70*K];
 };
-//报文池
 
-struct message_set
-{
-	//动态增长
-	vector <message_byte> MESSAGE_VECTOR;
-};
 //定义报文字段
 struct field
 {
@@ -59,7 +55,8 @@ struct data
 extern  vector <message_byte> MESSAGE_VECTOR;//报文池
 extern CRITICAL_SECTION g_CS;//全局关键代码段对象
 extern int STOP;//停止标识
-
+				
+string getTime();//获取时间字符化输出
 //程序API
 
 //报文解析线程入口
