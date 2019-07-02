@@ -5,7 +5,7 @@ DWORD updata(LPVOID lpParameter)
 	//数据库连接关键字
 	const char SERVER[10] = "127.0.0.1";
 	const char USERNAME[10] = "root";
-	const char PASSWORD[10] = "";
+	const char PASSWORD[10] = "123456";
 	const char DATABASE[20] = "satellite_message";
 	const int PORT = 3306;
 	while (1) {
@@ -61,20 +61,11 @@ DWORD updata(LPVOID lpParameter)
 					continue;//没有找到ip地址
 				}
 
-				//创建发送者
-				Socket socketer;
-				const char* ip = ipSet[0][0].c_str();//获取到地址
-				//建立TCP连接
-				if (!socketer.createSendServer(ip, 4999, 0)) { 
-					//创建不成功释放资源
-					delete groundStationId;
-					delete satelliteId;
-					continue;
-				}
+				
 
 				//读取数据上行配置文件
 				//读取配置文件创建接收服务
-				string config = "D:\\卫星星座运管系统\\数据上行\\" + dataSet[i][0] + "\\config.txt";
+				string config = "D:\\卫星星座运管系统\\数据上行\\" + dataSet[i][4] + "\\"  + dataSet[i][0] + "\\config.txt";
 				ifstream is(config, ios::in);
 				if (!is.is_open()) {
 					cout << "| 数据上行         | " ;
@@ -90,7 +81,7 @@ DWORD updata(LPVOID lpParameter)
 				getline(is, fileName);
 				getline(is, expandName);
 				is.close();
-				string file = "D:\\卫星星座运管系统\\数据上行\\" + dataSet[i][0]+"\\" + fileName + expandName;
+				string file = "D:\\卫星星座运管系统\\数据上行\\"+ dataSet[i][4] + "\\" + dataSet[i][0]+"\\" + fileName + expandName;
 				ifstream fileIs(file, ios::binary | ios::in);
 				if (!fileIs.is_open()) {
 					cout << "| 数据上行         | ";
@@ -100,6 +91,22 @@ DWORD updata(LPVOID lpParameter)
 					delete satelliteId;
 					continue;
 				}
+				//写日志
+				string sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,";
+				sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机创建TCP连');";
+				mysql.writeDataToDB(sql_date);
+
+				//创建发送者
+				Socket socketer;
+				const char* ip = ipSet[0][0].c_str();//获取到地址
+													 //建立TCP连接
+				if (!socketer.createSendServer(ip, 4999, 0)) {
+					//创建不成功释放资源
+					delete groundStationId;
+					delete satelliteId;
+					continue;
+				}
+
 				//读取文件
 				while (!fileIs.eof()) {
 					int bufLen = 1024 * 64;//数据最大64K
@@ -125,6 +132,9 @@ DWORD updata(LPVOID lpParameter)
 						
 						//发送失败释放资源跳出文件读写
 						cout << "| 数据上行         | 发送失败，断开连接" << endl;
+						sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
+						sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机断开TCP连');";
+						mysql.writeDataToDB(sql_date);
 						delete sendBuf;
 						delete up_expand_name;
 						delete up_file_name;
@@ -135,9 +145,12 @@ DWORD updata(LPVOID lpParameter)
 					if (fileIs.eof()== true) {
 						
 						cout << "| 数据上行         | " << dataSet[i][0] << "号任务上传成功" << endl;
-						
+						sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
+						sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机断开TCP连');";
+						mysql.writeDataToDB(sql_date);
 						//修改数据库分发标志
-						string ackSql = "update 任务分配表 set 数据分发标志 = 2 where 任务编号 = " + dataSet[i][0];
+						string ackSql = "update 任务分配表 set 任务标志 = 1 where 任务编号 = " + dataSet[i][0];
+						mysql.writeDataToDB(ackSql);
 						
 					}
 					

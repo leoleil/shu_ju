@@ -17,9 +17,9 @@ int main(int argc, char* argv[])
 	
 	InitializeCriticalSection(&g_CS);//初始化关键代码段对象
     //创建线程
-	HANDLE hThread1;//数据下行线程
-	hThread1 = CreateThread(NULL, 0, download_rec, NULL, 0, NULL);
-	CloseHandle(hThread1);
+	//HANDLE hThread1;//数据下行线程
+	//hThread1 = CreateThread(NULL, 0, download_rec, NULL, 0, NULL);
+	//CloseHandle(hThread1);
 
 	HANDLE hThread2;//数据上行
 	hThread2 = CreateThread(NULL, 0, updata, NULL, 0, NULL);
