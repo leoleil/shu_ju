@@ -5,7 +5,7 @@ DWORD updata(LPVOID lpParameter)
 	//数据库连接关键字
 	const char SERVER[10] = "127.0.0.1";
 	const char USERNAME[10] = "root";
-	const char PASSWORD[10] = "123456";
+	const char PASSWORD[10] = "";
 	const char DATABASE[20] = "satellite_message";
 	const int PORT = 3306;
 	while (1) {
@@ -18,7 +18,7 @@ DWORD updata(LPVOID lpParameter)
 		if (mysql.connectMySQL(SERVER, USERNAME, PASSWORD, DATABASE, PORT)) {
 			//从数据中获取分配任务
 			//寻找分发标志为2，数据分发标志为0的任务
-			string selectSql = "select 任务编号,任务类型,unix_timestamp(计划开始时间),unix_timestamp(计划截止时间),卫星编号,地面站编号 from 任务分配表 where 分发标志 = 2 and 任务标志 = 0 and 任务类型 = 110";
+			string selectSql = "select 任务编号,任务类型,unix_timestamp(计划开始时间),unix_timestamp(计划截止时间),卫星编号,地面站编号 from 任务分配表 where 分发标志 = 0 and 任务状态 = 2 and 任务类型 = 110";
 			vector<vector<string>> dataSet;
 			mysql.getDatafromDB(selectSql, dataSet);
 			if (dataSet.size() == 0) {
@@ -40,7 +40,7 @@ DWORD updata(LPVOID lpParameter)
 				UINT32 taskNum = util.stringToNum<UINT32>(dataSet[i][0]);//任务编号
 				UINT16 taskType = util.stringToNum<UINT16>(dataSet[i][1]);//任务类型
 				long long taskStartTime = util.stringToNum<long long>(dataSet[i][2]);//计划开始时间
-				if (taskStartTime > dateTime) {
+				if (taskStartTime*1000 > dateTime) {
 				 //如果还没到计划开始时间就跳过
 					continue;
 				}
@@ -106,7 +106,7 @@ DWORD updata(LPVOID lpParameter)
 					delete satelliteId;
 					continue;
 				}
-
+				cout << "| 数据上行         | >";
 				//读取文件
 				while (!fileIs.eof()) {
 					int bufLen = 1024 * 64;//数据最大64K
@@ -132,24 +132,25 @@ DWORD updata(LPVOID lpParameter)
 						
 						//发送失败释放资源跳出文件读写
 						cout << "| 数据上行         | 发送失败，断开连接" << endl;
-						sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
+						/*sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
 						sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机断开TCP连');";
-						mysql.writeDataToDB(sql_date);
+						mysql.writeDataToDB(sql_date);*/
 						delete sendBuf;
 						delete up_expand_name;
 						delete up_file_name;
 						delete fileDataBuf;
 						break; 
 					}
+					cout << ">";
 					//flieOs.write(fileDataBuf, bufLen);
 					if (fileIs.eof()== true) {
-						
+						cout << endl;
 						cout << "| 数据上行         | " << dataSet[i][0] << "号任务上传成功" << endl;
-						sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
+						/*sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
 						sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机断开TCP连');";
-						mysql.writeDataToDB(sql_date);
+						mysql.writeDataToDB(sql_date);*/
 						//修改数据库分发标志
-						string ackSql = "update 任务分配表 set 任务标志 = 1 where 任务编号 = " + dataSet[i][0];
+						string ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + dataSet[i][0];
 						mysql.writeDataToDB(ackSql);
 						
 					}
