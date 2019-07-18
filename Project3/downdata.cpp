@@ -65,7 +65,7 @@ DWORD download(LPVOID lpParameter)
 				if (_access(path.c_str(), 0) == -1) {//如果文件夹不存在
 					_mkdir(path.c_str());//则创建
 				}
-				path + "\\" + taskNumFile;
+				path = path + "\\" + taskNumFile;
 				string file_path = path + "\\" + fileName + expandName;
 				if (_access(path.c_str(), 0) == -1) {	
 					_mkdir(path.c_str());				
@@ -85,7 +85,7 @@ DWORD download(LPVOID lpParameter)
 				if (downMessage.getterEndFlag()) {
 					//是文件尾要删除缓存数据
 					//DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + i + 1);
-					ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + taskNumFile;
+					ackSql = "update 任务分配表 set 任务状态 = 6 where 任务编号 = " + taskNumFile;
 					mysql.writeDataToDB(ackSql);
 					cout << "| 数据下行         | 已缓存文件下载完毕" << endl;
 					break;//跳出循环

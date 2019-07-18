@@ -128,6 +128,7 @@ DWORD updata(LPVOID lpParameter)
 					char* sendBuf = new char[bufSize];//申请发送buf
 					ZeroMemory(sendBuf, bufSize);//清空发送空间
 					upMessage.createMessage(sendBuf, returnSize, bufSize);//创建传输字节包
+					Sleep(10);
 					if (socketer.sendMessage(sendBuf, bufSize) == -1) {//发送包固定65k
 						
 						//发送失败释放资源跳出文件读写
