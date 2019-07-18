@@ -3,15 +3,15 @@
 DWORD updata(LPVOID lpParameter)
 {
 	//数据库连接关键字
-	const char SERVER[10] = "127.0.0.1";
-	const char USERNAME[10] = "root";
-	const char PASSWORD[10] = "";
+	const char * SERVER = MYSQL_SERVER.data();
+	const char * USERNAME = MYSQL_USERNAME.data();
+	const char * PASSWORD = MYSQL_PASSWORD.data();
 	const char DATABASE[20] = "satellite_message";
 	const int PORT = 3306;
 	while (1) {
 		//5秒监测数据库的任务分配表
 		Sleep(5000);
-		cout << "| 数据上行         | 监测数据库分配表..." << endl;
+		//cout << "| 数据上行         | 监测数据库分配表..." << endl;
 		MySQLInterface mysql;//申请数据库连接对象
 
 		//连接数据库
@@ -40,7 +40,7 @@ DWORD updata(LPVOID lpParameter)
 				UINT32 taskNum = util.stringToNum<UINT32>(dataSet[i][0]);//任务编号
 				UINT16 taskType = util.stringToNum<UINT16>(dataSet[i][1]);//任务类型
 				long long taskStartTime = util.stringToNum<long long>(dataSet[i][2]);//计划开始时间
-				if (taskStartTime*1000 > dateTime) {
+				if (taskStartTime * 1000 > dateTime) {
 				 //如果还没到计划开始时间就跳过
 					continue;
 				}
@@ -128,6 +128,7 @@ DWORD updata(LPVOID lpParameter)
 					char* sendBuf = new char[bufSize];//申请发送buf
 					ZeroMemory(sendBuf, bufSize);//清空发送空间
 					upMessage.createMessage(sendBuf, returnSize, bufSize);//创建传输字节包
+					Sleep(100);
 					if (socketer.sendMessage(sendBuf, bufSize) == -1) {//发送包固定65k
 						
 						//发送失败释放资源跳出文件读写

@@ -19,9 +19,9 @@ DWORD download_rec(LPVOID lpParameter)
 DWORD download(LPVOID lpParameter)
 {
 	//数据库连接关键字
-	const char SERVER[10] = "127.0.0.1";
-	const char USERNAME[10] = "root";
-	const char PASSWORD[10] = "";
+	const char * SERVER = MYSQL_SERVER.data() ;
+	const char * USERNAME = MYSQL_USERNAME.data();
+	const char * PASSWORD = MYSQL_PASSWORD.data();
 	const char DATABASE[20] = "satellite_message";
 	const int PORT = 3306;
 	MySQLInterface mysql;//申请数据库连接对象
@@ -38,10 +38,10 @@ DWORD download(LPVOID lpParameter)
 			int setLen = DATA_MESSAGES.size();
 			LeaveCriticalSection(&data_CS);//离开关键代码段
 
-			for (int i = 0; i < setLen; i++) {
+			while (1) {
 				EnterCriticalSection(&data_CS);//进入关键代码段
 				char byte_data[70 * 1024];//每个报文空间最大70K
-				memcpy(byte_data, DATA_MESSAGES[i].val, 70 * 1024);//将报文池中数据取出
+				memcpy(byte_data, DATA_MESSAGES[0].val, 70 * 1024);//将报文池中数据取出
 				LeaveCriticalSection(&data_CS);//离开关键代码段
 				string ackSql = "";
 				DownMessage downMessage;
@@ -55,13 +55,20 @@ DWORD download(LPVOID lpParameter)
 				char* data = new char[size];
 				downMessage.getterData(data, size);//获取数据
 				string taskNumFile = to_string(taskNum);
-				string path = "D:\\卫星星座运管系统\\数据下行\\" + taskNumFile;
+				//检查数据库中任务编号的卫星编号
+				string sql = "select 卫星编号 from 任务分配表 where 任务编号 = " + taskNumFile + ";";
+				vector<vector<string>> s;
+				mysql.getDatafromDB(sql, s);
+				string satelliteId = s[0][0];
+
+				string path = "D:\\卫星星座运管系统\\数据下行\\" + satelliteId;
+				if (_access(path.c_str(), 0) == -1) {//如果文件夹不存在
+					_mkdir(path.c_str());//则创建
+				}
+				path + "\\" + taskNumFile;
 				string file_path = path + "\\" + fileName + expandName;
-				//string command;
-				//command = "mkdir - p " + path;
-				//system(command.c_str());//创建文件夹
-				if (_access(path.c_str(), 0) == -1) {	//如果文件夹不存在
-					_mkdir(path.c_str());				//则创建
+				if (_access(path.c_str(), 0) == -1) {	
+					_mkdir(path.c_str());				
 					cout << "| 数据下行保存路径 | " + path << endl;
 
 				}
@@ -70,44 +77,42 @@ DWORD download(LPVOID lpParameter)
 				ofs.write(data, size);
 				ofs.close();
 				delete data;
-
+				EnterCriticalSection(&data_CS);//进入关键代码段
+				DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + 1);//删除元素
+				LeaveCriticalSection(&data_CS);
 
 				//判断是否是文件尾
 				if (downMessage.getterEndFlag()) {
 					//是文件尾要删除缓存数据
-					DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + i + 1);
+					//DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + i + 1);
 					ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + taskNumFile;
 					mysql.writeDataToDB(ackSql);
 					cout << "| 数据下行         | 已缓存文件下载完毕" << endl;
 					break;//跳出循环
 				}
 				else {
-					//不是文件尾要查看报文池是否有更新
-					//如果已经筛查到最后一个数据还没到文件尾
-					if (i == setLen - 1) {
-						int count = 0;
-						//等待新的数据,最多一分钟
-						while (count<60) {
-							EnterCriticalSection(&data_CS);//进入关键代码段
-							if (DATA_MESSAGES.size() > setLen) {
-								int setLen = DATA_MESSAGES.size();
-								break;//新数据到达跳出循环
-							}
+					int count = 0;
+					//等待新的数据,最多一分钟
+					while (count<60) {
+						EnterCriticalSection(&data_CS);//进入关键代码段
+						if (DATA_MESSAGES.size() > 0) {
 							LeaveCriticalSection(&data_CS);
-							count++;
-							Sleep(1000);
+							break;//新数据到达跳出循环
 						}
-						if (count == 60) {
-							cout << "| 数据下行         | 文件上传数据等待超时" << endl;
-							//删除缓存数据
-							DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + i + 1);
-							//删除已经下载数据
-							remove(file_path.c_str());
-							cout << "| 数据下行         | 清空文件已缓存文件" << endl;
-							ackSql = "update 任务分配表 set 任务状态 = 6 , ACK = 1100,任务结束时间 = now() where 任务编号 = " + taskNumFile;
-							mysql.writeDataToDB(ackSql);
-							break;//跳出循环
-						}
+						LeaveCriticalSection(&data_CS);
+						count++;
+						Sleep(1000);
+					}
+					if (count == 60) {
+						cout << "| 数据下行         | 文件上传数据等待超时" << endl;
+						//删除缓存数据
+						DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + 1);
+						//删除已经下载数据
+						remove(file_path.c_str());
+						cout << "| 数据下行         | 清空文件已缓存文件" << endl;
+						ackSql = "update 任务分配表 set 任务状态 = 6 ,任务结束时间 = now() where 任务编号 = " + taskNumFile;
+						mysql.writeDataToDB(ackSql);
+						break;//跳出循环
 					}
 
 				}

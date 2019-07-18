@@ -15,6 +15,9 @@
 #include "Socket.h"
 
 using namespace std;
+extern string MYSQL_SERVER;
+extern string MYSQL_USERNAME;
+extern string MYSQL_PASSWORD;
 
 /*任务分配模块*/
 //任务分配线程入口

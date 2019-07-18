@@ -12,7 +12,7 @@ private:
 	char fileName[32];//文件名
 	char expandName[8];//拓展名
 	bool endFlag;//结束标志
-	int size;//数据块长度
+	int size=0;//数据块长度
 	char* data;//数据块
 public:
 	UINT32 getterTaskNum();
