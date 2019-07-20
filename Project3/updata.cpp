@@ -44,7 +44,8 @@ DWORD updata(LPVOID lpParameter)
 				 //如果还没到计划开始时间就跳过
 					continue;
 				}
-
+				string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机建立TCP连接');";
+				mysql.writeDataToDB(logSql);
 				long long taskEndTime = util.stringToNum<long long>(dataSet[i][3]);//计划截止时间
 				char* satelliteId = new char[20];//卫星编号
 				strcpy_s(satelliteId, dataSet[i][4].size() + 1, dataSet[i][4].c_str());
@@ -91,21 +92,20 @@ DWORD updata(LPVOID lpParameter)
 					delete satelliteId;
 					continue;
 				}
-				//写日志
-				string sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,";
-				sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机创建TCP连');";
-				mysql.writeDataToDB(sql_date);
 
 				//创建发送者
 				Socket socketer;
 				const char* ip = ipSet[0][0].c_str();//获取到地址
-													 //建立TCP连接
+				//建立TCP连接
 				if (!socketer.createSendServer(ip, 4999, 0)) {
 					//创建不成功释放资源
 					delete groundStationId;
 					delete satelliteId;
 					continue;
 				}
+				//写日志
+				logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'"+ ipSet[0][0] + ":" + dataSet[i][0] +" 与数据中心机建立TCP连接');";
+				mysql.writeDataToDB(logSql);
 				cout << "| 数据上行         | ";
 				//读取文件
 				while (!fileIs.eof()) {
@@ -133,9 +133,8 @@ DWORD updata(LPVOID lpParameter)
 						
 						//发送失败释放资源跳出文件读写
 						cout << "| 数据上行         | 发送失败，断开连接" << endl;
-						/*sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
-						sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机断开TCP连');";
-						mysql.writeDataToDB(sql_date);*/
+						logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13001,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机断开TCP连接');";
+						mysql.writeDataToDB(logSql);
 						delete sendBuf;
 						delete up_expand_name;
 						delete up_file_name;
@@ -147,9 +146,10 @@ DWORD updata(LPVOID lpParameter)
 					if (fileIs.eof()== true) {
 						cout << endl;
 						cout << "| 数据上行         | " << dataSet[i][0] << "号任务上传成功" << endl;
-						/*sql_date = "insert into 系统日志表 (对象,事件类型,参数) values ('数据上行模块',13000,'";
-						sql_date = sql_date + ipSet[0][0] + ":" + dataSet[i][0] + "与数据通信中心机断开TCP连');";
-						mysql.writeDataToDB(sql_date);*/
+						logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13010,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 收到最后一份数据报文');";
+						mysql.writeDataToDB(logSql);
+						logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13001,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机断开TCP连接');";
+						mysql.writeDataToDB(logSql);
 						//修改数据库分发标志
 						string ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + dataSet[i][0];
 						mysql.writeDataToDB(ackSql);
