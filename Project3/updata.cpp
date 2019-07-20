@@ -44,8 +44,7 @@ DWORD updata(LPVOID lpParameter)
 				 //如果还没到计划开始时间就跳过
 					continue;
 				}
-				string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机建立TCP连接');";
-				mysql.writeDataToDB(logSql);
+				
 				long long taskEndTime = util.stringToNum<long long>(dataSet[i][3]);//计划截止时间
 				char* satelliteId = new char[20];//卫星编号
 				strcpy_s(satelliteId, dataSet[i][4].size() + 1, dataSet[i][4].c_str());
@@ -61,8 +60,8 @@ DWORD updata(LPVOID lpParameter)
 					delete satelliteId;
 					continue;//没有找到ip地址
 				}
-
-				
+				string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机建立TCP连接');";
+				mysql.writeDataToDB(logSql);
 
 				//读取数据上行配置文件
 				//读取配置文件创建接收服务

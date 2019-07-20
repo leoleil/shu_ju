@@ -29,11 +29,11 @@ int DowndataSocket::createReceiveServer(const int port, std::vector<message_buf>
 	const char DATABASE_2[20] = "satellite_message";
 	const int PORT = 3306;
 	MySQLInterface mysql;
-	if (mysql.connectMySQL(SERVER, USERNAME, PASSWORD, DATABASE, PORT)) {
+	if (mysql.connectMySQL("127.0.0.1", USERNAME, PASSWORD, DATABASE, PORT)) {
 
 	}
 	else {
-		cout << "| 卫星遥测         | 数据库连接失败" << endl;
+		cout << "| 数据下行        | 数据库连接失败" << endl;
 		return 0;
 	}
 	cout << "| 数据下行         | 服务启动" << endl;

@@ -26,7 +26,7 @@ DWORD download(LPVOID lpParameter)
 	const int PORT = 3306;
 	MySQLInterface mysql;//申请数据库连接对象
 	//连接数据库
-	if (mysql.connectMySQL(SERVER, USERNAME, PASSWORD, DATABASE, PORT)) {
+	if (mysql.connectMySQL("127.0.0.1", USERNAME, PASSWORD, DATABASE, PORT)) {
 		while (1) {
 			Sleep(100);
 			EnterCriticalSection(&data_CS);//进入关键代码段
