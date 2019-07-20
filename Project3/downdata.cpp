@@ -19,14 +19,14 @@ DWORD download_rec(LPVOID lpParameter)
 DWORD download(LPVOID lpParameter)
 {
 	//数据库连接关键字
-	const char * SERVER = MYSQL_SERVER.data() ;
+	const char * SERVER = MYSQL_SERVER.c_str() ;
 	const char * USERNAME = MYSQL_USERNAME.data();
 	const char * PASSWORD = MYSQL_PASSWORD.data();
 	const char DATABASE[20] = "satellite_message";
 	const int PORT = 3306;
 	MySQLInterface mysql;//申请数据库连接对象
 	//连接数据库
-	if (mysql.connectMySQL("127.0.0.1", USERNAME, PASSWORD, DATABASE, PORT)) {
+	if (mysql.connectMySQL(SERVER, USERNAME, PASSWORD, DATABASE, PORT)) {
 		while (1) {
 			Sleep(100);
 			EnterCriticalSection(&data_CS);//进入关键代码段
