@@ -8,18 +8,20 @@ DWORD download_rec(LPVOID lpParameter)
 	HANDLE hThread1;//创建数据解析线程，读取数据池中数据
 	hThread1 = CreateThread(NULL, 0, download, NULL, 0, NULL);
 	CloseHandle(hThread1);
+	DeleteCriticalSection(&data_CS);//删除关键代码段对象
 	while (1) {
 		DowndataSocket service;//创建接收任务服务
 		service.createReceiveServer(4997, DATA_MESSAGES);
 	}
-	DeleteCriticalSection(&data_CS);//删除关键代码段对象
+	
+	
 	return 0;
 }
 
 DWORD download(LPVOID lpParameter)
 {
 	//数据库连接关键字
-	const char * SERVER = MYSQL_SERVER.c_str() ;
+	const char * SERVER = MYSQL_SERVER.data() ;
 	const char * USERNAME = MYSQL_USERNAME.data();
 	const char * PASSWORD = MYSQL_PASSWORD.data();
 	const char DATABASE[20] = "satellite_message";
