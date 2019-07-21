@@ -60,9 +60,7 @@ DWORD updata(LPVOID lpParameter)
 					delete satelliteId;
 					continue;//没有找到ip地址
 				}
-				string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机建立TCP连接');";
-				mysql.writeDataToDB(logSql);
-
+				//string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机建立TCP连接');";
 				//读取数据上行配置文件
 				//读取配置文件创建接收服务
 				string config = "D:\\卫星星座运管系统\\数据上行\\" + dataSet[i][4] + "\\"  + dataSet[i][0] + "\\config.txt";
@@ -103,7 +101,7 @@ DWORD updata(LPVOID lpParameter)
 					continue;
 				}
 				//写日志
-				logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'"+ ipSet[0][0] + ":" + dataSet[i][0] +" 与数据中心机建立TCP连接');";
+				string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'"+ ipSet[0][0] + ":" + dataSet[i][0] +" 与数据中心机建立TCP连接');";
 				mysql.writeDataToDB(logSql);
 				cout << "| 数据上行         | ";
 				//读取文件
