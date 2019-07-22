@@ -63,23 +63,51 @@ DWORD updata(LPVOID lpParameter)
 				//string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据上行模块',13000,'" + ipSet[0][0] + ":" + dataSet[i][0] + " 与数据中心机建立TCP连接');";
 				//读取数据上行配置文件
 				//读取配置文件创建接收服务
-				string config = "D:\\卫星星座运管系统\\数据上行\\" + dataSet[i][4] + "\\"  + dataSet[i][0] + "\\config.txt";
-				ifstream is(config, ios::in);
-				if (!is.is_open()) {
-					cout << "| 数据上行         | " ;
-					cout << config << " 无法打开" << endl;
+				MySQLInterface diskMysql;
+				if (!diskMysql.connectMySQL(SERVER, USERNAME, PASSWORD, "disk", PORT)) {
+					cout << "| 数据上行         | 连接数据库失败" << endl;
+					cout << "| 数据上行错误信息 | " << diskMysql.errorNum << endl;
+					break;
+				}
+				vector<vector<string>> disk;
+				diskMysql.getDatafromDB("SELECT * FROM disk.存盘位置;", disk);
+				if (disk.size() == 0) {
+					cout << "| 数据上行         | 存盘位置未知，请在数据库设置。" << endl;
+					break;
+				}
+				string path = disk[0][1];
+				path = path + "\\数据上行\\" + dataSet[i][4] + "\\" + dataSet[i][0];
+				vector<string> files;//要上传的文件
+				// 文件句柄
+				//long hFile = 0;  //win7
+				intptr_t hFile = 0;   //win10
+				// 文件信息
+				struct _finddata_t fileinfo;
+				string p;
+				if ((hFile = _findfirst(p.assign(path).append("\\*").c_str(), &fileinfo)) != -1) {
+					do {
+						if ((strcmp(fileinfo.name, ".") != 0) && (strcmp(fileinfo.name, "..") != 0)) {
+							// 保存文件的全路径
+							string s = "";
+							files.push_back(s.append(fileinfo.name));
+						}
+
+					} while (_findnext(hFile, &fileinfo) == 0); //寻找下一个，成功返回0，否则-1
+
+					_findclose(hFile);
+				}
+				if (files.size() == 0) {
+					cout << "| 数据上行         | ";
+					cout << path << " 无文件" << endl;
 					//创建不成功释放资源
 					delete groundStationId;
 					delete satelliteId;
 					continue;
 				}
-				string fileName = "";//文件名
-				string expandName = "";//扩展名
-				
-				getline(is, fileName);
-				getline(is, expandName);
-				is.close();
-				string file = "D:\\卫星星座运管系统\\数据上行\\"+ dataSet[i][4] + "\\" + dataSet[i][0]+"\\" + fileName + expandName;
+				int pos = files[0].find_last_of('.');
+				string fileName(files[0].substr(0, pos));//文件名
+				string expandName(files[0].substr(pos));//扩展名
+				string file = path.append("\\").append(files[0]);
 				ifstream fileIs(file, ios::binary | ios::in);
 				if (!fileIs.is_open()) {
 					cout << "| 数据上行         | ";

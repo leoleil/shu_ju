@@ -62,8 +62,20 @@ DWORD download(LPVOID lpParameter)
 				vector<vector<string>> s;
 				mysql.getDatafromDB(sql, s);
 				string satelliteId = s[0][0];
-
-				string path = "D:\\卫星星座运管系统\\数据下行\\" + satelliteId;
+				vector<vector<string>> disk;//存盘位置
+				MySQLInterface diskMysql;
+				if (!diskMysql.connectMySQL(SERVER, USERNAME, PASSWORD, "disk", PORT)) {
+					cout << "| 数据下行         | 连接数据库失败" << endl;
+					cout << "| 数据下行错误信息 | " << diskMysql.errorNum << endl;
+					break;
+				}
+				diskMysql.getDatafromDB("SELECT * FROM disk.存盘位置;", disk);
+				if (disk.size() == 0) {
+					cout << "| 数据上行         | 存盘位置未知" << endl;
+					break;
+				}
+				string path = disk[0][1];
+				path = path + "\\数据下行\\" + satelliteId;
 				if (_access(path.c_str(), 0) == -1) {//如果文件夹不存在
 					_mkdir(path.c_str());//则创建
 				}

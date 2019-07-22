@@ -13,7 +13,7 @@
 #include "UpMessage.h"
 #include "StringNumUtils.h"
 #include "Socket.h"
-
+#include <io.h>
 using namespace std;
 extern string MYSQL_SERVER;
 extern string MYSQL_USERNAME;
