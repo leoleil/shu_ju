@@ -102,7 +102,7 @@ DWORD download(LPVOID lpParameter)
 					ackSql = "update 任务分配表 set 任务状态 = 6 where 任务编号 = " + taskNumFile;
 					mysql.writeDataToDB(ackSql);
 					cout << "| 数据下行         | 已缓存文件下载完毕" << endl;
-					string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据下行模块',14001,'数据中心机:" + taskNumFile + " 收到最后一份数据报文');";
+					string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据下行模块',14010,'数据中心机:" + taskNumFile + " 收到最后一份数据报文');";
 					mysql.writeDataToDB(logSql);
 					break;//跳出循环
 				}
