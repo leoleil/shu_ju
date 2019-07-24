@@ -73,7 +73,13 @@ DWORD updata(LPVOID lpParameter)
 				diskMysql.getDatafromDB("SELECT * FROM disk.存盘位置;", disk);
 				if (disk.size() == 0) {
 					cout << "| 数据上行         | 存盘位置未知，请在数据库设置。" << endl;
-					break;
+					//修改数据库分发标志
+					string ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + dataSet[i][0];
+					mysql.writeDataToDB(ackSql);
+					//创建不成功释放资源
+					delete groundStationId;
+					delete satelliteId;
+					continue;
 				}
 				string path = disk[0][1];
 				path = path + "\\数据上行\\" + dataSet[i][4] + "\\" + dataSet[i][0];
@@ -99,6 +105,9 @@ DWORD updata(LPVOID lpParameter)
 				if (files.size() == 0) {
 					cout << "| 数据上行         | ";
 					cout << path << " 无文件" << endl;
+					//修改数据库分发标志
+					string ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + dataSet[i][0];
+					mysql.writeDataToDB(ackSql);
 					//创建不成功释放资源
 					delete groundStationId;
 					delete satelliteId;
@@ -112,6 +121,9 @@ DWORD updata(LPVOID lpParameter)
 				if (!fileIs.is_open()) {
 					cout << "| 数据上行         | ";
 					cout << file << " 无法打开" << endl;
+					//修改数据库分发标志
+					string ackSql = "update 任务分配表 set 分发标志 = 1 where 任务编号 = " + dataSet[i][0];
+					mysql.writeDataToDB(ackSql);
 					//创建不成功释放资源
 					delete groundStationId;
 					delete satelliteId;
