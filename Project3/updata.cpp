@@ -52,7 +52,7 @@ DWORD updata(LPVOID lpParameter)
 				strcpy_s(groundStationId, dataSet[i][5].size() + 1, dataSet[i][5].c_str());
 				
 				//查找地面站ip地址发送报文
-				string groundStationSql = "select IP地址 from 地面站信息表 where 地面站编号 =" + dataSet[i][5];
+				string groundStationSql = "select IP地址 from 地面站信息表 where 地面站编号 ='" + dataSet[i][5] + "';";
 				vector<vector<string>> ipSet;
 				mysql.getDatafromDB(groundStationSql, ipSet);
 				if (ipSet.size() == 0){
