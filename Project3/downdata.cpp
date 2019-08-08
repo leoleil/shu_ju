@@ -24,7 +24,7 @@ DWORD download(LPVOID lpParameter)
 	const char * SERVER = MYSQL_SERVER.data() ;
 	const char * USERNAME = MYSQL_USERNAME.data();
 	const char * PASSWORD = MYSQL_PASSWORD.data();
-	const char DATABASE[20] = "satellite_message";
+	const char DATABASE[20] = "uav_message";
 	const int PORT = 3306;
 	MySQLInterface mysql;//申请数据库连接对象
 	//连接数据库
@@ -58,7 +58,7 @@ DWORD download(LPVOID lpParameter)
 				downMessage.getterData(data, size);//获取数据
 				string taskNumFile = to_string(taskNum);
 				//检查数据库中任务编号的卫星编号
-				string sql = "select 卫星编号 from 任务分配表 where 任务编号 = " + taskNumFile + ";";
+				string sql = "select 无人机编号 from 任务分配表 where 任务编号 = " + taskNumFile + ";";
 				vector<vector<string>> s;
 				mysql.getDatafromDB(sql, s);
 				string satelliteId = s[0][0];
@@ -71,21 +71,22 @@ DWORD download(LPVOID lpParameter)
 				}
 				diskMysql.getDatafromDB("SELECT * FROM disk.存盘位置;", disk);
 				if (disk.size() == 0) {
-					cout << "| 数据上行         | 存盘位置未知" << endl;
+					cout << "| 数据下行         | 存盘位置未知" << endl;
 					break;
 				}
 				string path = disk[0][1];
 				path = path + "\\数据下行\\" + satelliteId;
 				if (_access(path.c_str(), 0) == -1) {//如果文件夹不存在
 					_mkdir(path.c_str());//则创建
+					cout << "| 数据下行保存路径 | " + path << endl;
 				}
-				path = path + "\\" + taskNumFile;
+				//path = path + "\\" + taskNumFile;
 				string file_path = path + "\\" + fileName + expandName;
-				if (_access(path.c_str(), 0) == -1) {	
+				/*if (_access(path.c_str(), 0) == -1) {	
 					_mkdir(path.c_str());				
 					cout << "| 数据下行保存路径 | " + path << endl;
 
-				}
+				}*/
 				//打开文件
 				ofstream ofs(file_path, ios::binary | ios::out | ios::app);
 				ofs.write(data, size);
@@ -99,8 +100,6 @@ DWORD download(LPVOID lpParameter)
 				if (downMessage.getterEndFlag()) {
 					//是文件尾要删除缓存数据
 					//DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + i + 1);
-					ackSql = "update 任务分配表 set 任务状态 = 6 where 任务编号 = " + taskNumFile;
-					mysql.writeDataToDB(ackSql);
 					cout << "| 数据下行         | 已缓存文件下载完毕" << endl;
 					string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据下行模块',14010,'数据中心机:" + taskNumFile + " 收到最后一份数据报文');";
 					mysql.writeDataToDB(logSql);
@@ -126,8 +125,6 @@ DWORD download(LPVOID lpParameter)
 						//删除已经下载数据
 						remove(file_path.c_str());
 						cout << "| 数据下行         | 清空文件已缓存文件" << endl;
-						ackSql = "update 任务分配表 set 任务状态 = 6 ,任务结束时间 = now() where 任务编号 = " + taskNumFile;
-						mysql.writeDataToDB(ackSql);
 						break;//跳出循环
 					}
 

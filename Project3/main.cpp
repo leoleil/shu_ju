@@ -120,9 +120,9 @@ int main(int argc, char* argv[])
     //创建线程
 	
 
-	HANDLE hThread2;//数据上行
-	hThread2 = CreateThread(NULL, 0, updata, NULL, 0, NULL);
-	CloseHandle(hThread2);
+	//HANDLE hThread2;//数据上行
+	//hThread2 = CreateThread(NULL, 0, updata, NULL, 0, NULL);
+	//CloseHandle(hThread2);
 	HANDLE hThread3;//数据下行线程
 	hThread3 = CreateThread(NULL, 0, download_rec, NULL, 0, NULL);
 	CloseHandle(hThread3);
