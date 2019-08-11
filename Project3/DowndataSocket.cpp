@@ -25,7 +25,7 @@ int DowndataSocket::createReceiveServer(const int port, std::vector<message_buf>
 	const char* SERVER = MYSQL_SERVER.data();//连接的数据库ip
 	const char* USERNAME = MYSQL_USERNAME.data();
 	const char* PASSWORD = MYSQL_PASSWORD.data();
-	const char DATABASE[20] = "satellite_message";
+	const char DATABASE[20] = "uav_message";
 	const int PORT = 3306;
 	
 	cout << "| 数据下行         | 服务启动" << endl;
