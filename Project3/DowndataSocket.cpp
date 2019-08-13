@@ -87,7 +87,7 @@ int DowndataSocket::createReceiveServer(const int port, std::vector<message_buf>
 	//写日志
 	MySQLInterface mysql;
 	if (mysql.connectMySQL(SERVER, USERNAME, PASSWORD, DATABASE, PORT)) {
-		string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据下行模块',14000,'建立TCP连接');";
+		string logSql = "insert into 系统日志表 (时间,对象,事件类型,事件说明) values (now(),'数据下行模块',14000,'建立TCP连接');";
 		mysql.writeDataToDB(logSql);
 		//mysql.closeMySQL();
 	}
@@ -121,7 +121,7 @@ int DowndataSocket::createReceiveServer(const int port, std::vector<message_buf>
 			if (retVal == 0) {
 				cout << "| 数据下行         | 接收完毕断开本次连接" << endl;
 				//写日志
-				string logSql = "insert into 系统日志表 (时间,对象,事件类型,参数) values (now(),'数据下行模块',14001,'断开TCP连接');";
+				string logSql = "insert into 系统日志表 (时间,对象,事件类型,事件说明) values (now(),'数据下行模块',14001,'断开TCP连接');";
 				mysql.writeDataToDB(logSql);
 				mysql.closeMySQL();
 				
