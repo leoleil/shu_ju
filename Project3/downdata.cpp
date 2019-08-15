@@ -43,7 +43,7 @@ DWORD download(LPVOID lpParameter)
 			while (1) {
 				EnterCriticalSection(&data_CS);//进入关键代码段
 				char byte_data[70 * 1024];//每个报文空间最大70K
-				memcpy(byte_data, DATA_MESSAGES[0].val, 70 * 1024);//将报文池中数据取出
+				memcpy(byte_data, DATA_MESSAGES[0].val, 70 * 1024);//将报文池中第一个数据取出
 				LeaveCriticalSection(&data_CS);//离开关键代码段
 				string ackSql = "";
 				DownMessage downMessage;
@@ -67,11 +67,13 @@ DWORD download(LPVOID lpParameter)
 				if (!diskMysql.connectMySQL(SERVER, USERNAME, PASSWORD, "disk", PORT)) {
 					cout << "| 数据下行         | 连接数据库失败" << endl;
 					cout << "| 数据下行错误信息 | " << diskMysql.errorNum << endl;
+					delete data;
 					break;
 				}
 				diskMysql.getDatafromDB("SELECT * FROM disk.存盘位置;", disk);
 				if (disk.size() == 0) {
 					cout << "| 数据下行         | 存盘位置未知" << endl;
+					delete data;
 					break;
 				}
 				string path = disk[0][1];
@@ -100,7 +102,7 @@ DWORD download(LPVOID lpParameter)
 				if (downMessage.getterEndFlag()) {
 					//是文件尾要删除缓存数据
 					//DATA_MESSAGES.erase(DATA_MESSAGES.begin(), DATA_MESSAGES.begin() + i + 1);
-					cout << "| 数据下行         | 已缓存文件下载完毕" << endl;
+					cout << "| 数据下行         | 文件下载完毕，存盘："<< file_path << endl;
 					string logSql = "insert into 系统日志表 (时间,对象,事件类型,事件说明) values (now(),'数据下行模块',14010,'数据中心机:" + taskNumFile + " 收到最后一份数据报文');";
 					mysql.writeDataToDB(logSql);
 					break;//跳出循环
